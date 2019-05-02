@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Enabled modules
+enabled=('version_augmentation')
+
+for module in ${enabled[@]}; do
+  source $(dirname ${BASH_SOURCE[0]})/lib/$module
+done
