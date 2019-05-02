@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Enabled modules
-enabled=('version_augmentation')
+enabled=('version_augmentation' 'version_persistance')
 
 for module in ${enabled[@]}; do
   source $(dirname ${BASH_SOURCE[0]})/lib/$module

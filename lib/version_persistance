@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# This module needs the environmental variable VERSION_PERSISTENCE_FILE in order to operate over a persistence file 
+
+# Pre-conditions:
+##  The variable VERSION_PERSITANCE_FILE is set
+# Post-conditions:
+##  The file is created if it wasn't
+init_version_persistence(){
+  touch $VERSION_PERSISTENCE_FILE
+}
+
+# Pre-conditions
+##  The persistence file is initialized
+# Parameters:
+##  The name of the variable that will hold the version being tracked
+##  The initial version number
+# Returns:
+##  The line where the placeholder was written
+# Post-conditions
+## A new line with the name of the variable chosen and the inital version number separated by space is added to the persistence file if it wasn't present before
+init_version_tracking_of(){
+  [[ "$(grep -e "^$1 " $VERSION_PERSISTENCE_FILE)" == "" ]] && echo "$1 $2" >> $VERSION_PERSISTENCE_FILE
+}
+
+new_major_version_of(){
+  name_version=($(cat $VERSION_PERSISTENCE_FILE | grep -e "^$1 "))
+  if [[ "${name_version}" != "" ]]; then
+    new_version="$(major_augmentation ${name_version[1]})"
+    sed -i "s/^${name_version[0]} ${name_version[1]}$/$1 $new_version/" $VERSION_PERSISTENCE_FILE 
+  fi
+}
+
+new_minor_version_of(){
+  name_version=($(cat $VERSION_PERSISTENCE_FILE | grep -e "^$1 "))
+  if [[ "${name_version}" != "" ]]; then
+    new_version="$(minor_augmentation ${name_version[1]})"
+    sed -i "s/^${name_version[0]} ${name_version[1]//./\.}/$1 $new_version/" $VERSION_PERSISTENCE_FILE 
+  fi
+}
+
+new_revision_version_of(){
+  name_version=($(cat $VERSION_PERSISTENCE_FILE | grep -e "^$1 "))
+  if [[ "${name_version}" != "" ]]; then
+    new_version="$(revision_augmentation ${name_version[1]})"
+    sed -i "s/^${name_version[0]} ${name_version[1]//./\.}/$1 $new_version/" $VERSION_PERSISTENCE_FILE 
+  fi
+}
+
+get_version_of(){
+  echo $(cat $VERSION_PERSISTENCE_FILE | grep -e "^$1 " | awk '{print $2}')
+}
