@@ -8,6 +8,9 @@
 ##  The file is created if it wasn't
 init_version_persistence(){
   touch $VERSION_PERSISTENCE_FILE
+  if [[ "$VERSION_PERSISTENCE_SEPARATOR" == "" ]]; then
+    export VERSION_PERSISTENCE_SEPARATOR=' '
+  fi
 }
 
 # Pre-conditions
@@ -20,11 +23,11 @@ init_version_persistence(){
 # Post-conditions
 ## A new line with the name of the variable chosen and the inital version number separated by space is added to the persistence file if it wasn't present before
 init_version_tracking_of(){
-  [[ "$(grep -e "^$1 " $VERSION_PERSISTENCE_FILE)" == "" ]] && echo "$1 $2" >> $VERSION_PERSISTENCE_FILE
+  [[ "$(grep -e "^$1$VERSION_PERSISTENCE_SEPARATOR" $VERSION_PERSISTENCE_FILE)" == "" ]] && echo "$1$VERSION_PERSISTENCE_SEPARATOR$2" >> $VERSION_PERSISTENCE_FILE
 }
 
 new_major_version_of(){
-  name_version=($(cat $VERSION_PERSISTENCE_FILE | grep -e "^$1 "))
+  name_version=($(cat $VERSION_PERSISTENCE_FILE | grep -e "^$1$VERSION_PERSISTENCE_SEPARATOR"))
   if [[ "${name_version}" != "" ]]; then
     new_version="$(major_augmentation ${name_version[1]})"
     sed -i "s/^${name_version[0]} ${name_version[1]}$/$1 $new_version/" $VERSION_PERSISTENCE_FILE 
@@ -32,21 +35,21 @@ new_major_version_of(){
 }
 
 new_minor_version_of(){
-  name_version=($(cat $VERSION_PERSISTENCE_FILE | grep -e "^$1 "))
+  name_version=($(cat $VERSION_PERSISTENCE_FILE | grep -e "^$1$VERSION_PERSISTENCE_SEPARATOR"))
   if [[ "${name_version}" != "" ]]; then
     new_version="$(minor_augmentation ${name_version[1]})"
-    sed -i "s/^${name_version[0]} ${name_version[1]//./\.}/$1 $new_version/" $VERSION_PERSISTENCE_FILE 
+    sed -i "s/^${name_version[0]}$VERSION_PERSISTENCE_SEPARATOR${name_version[1]//./\.}/$1$VERSION_PERSISTENCE_SEPARATOR$new_version/" $VERSION_PERSISTENCE_FILE 
   fi
 }
 
 new_revision_version_of(){
-  name_version=($(cat $VERSION_PERSISTENCE_FILE | grep -e "^$1 "))
+  name_version=($(cat $VERSION_PERSISTENCE_FILE | grep -e "^$1$VERSION_PERSISTENCE_SEPARATOR"))
   if [[ "${name_version}" != "" ]]; then
     new_version="$(revision_augmentation ${name_version[1]})"
-    sed -i "s/^${name_version[0]} ${name_version[1]//./\.}/$1 $new_version/" $VERSION_PERSISTENCE_FILE 
+    sed -i "s/^${name_version[0]}$VERSION_PERSISTENCE_SEPARATOR${name_version[1]//./\.}/$1$VERSION_PERSISTENCE_SEPARATOR$new_version/" $VERSION_PERSISTENCE_FILE 
   fi
 }
 
 get_version_of(){
-  echo $(cat $VERSION_PERSISTENCE_FILE | grep -e "^$1 " | awk '{print $2}')
+  echo $(cat $VERSION_PERSISTENCE_FILE | grep -e "^$1$VERSION_PERSISTENCE_SEPARATOR" | awk -F "$VERSION_PERSISTENCE_SEPARATOR" '{print $2}')
 }
